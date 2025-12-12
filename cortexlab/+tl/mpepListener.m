@@ -1,4 +1,4 @@
-function mpepListener()
+function mpepListener(listenport)
 %TL.MPEPLISTENER Starts an Mpep UDP listener to start/stop Timeline
 %   TL.MPEPLISTENER() starts a blocking listener for Mpep protocol UDP
 %   messages to start/stop Timeline when an experiment is started or
@@ -8,7 +8,7 @@ function mpepListener()
 
 % 2014-01 CB created
 
-tls = tl.bindMpepServer();
+tls = tl.bindMpepServer(listenport);
 cleanup = onCleanup(tls.close);
 tls.listen();
 
