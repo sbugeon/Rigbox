@@ -169,7 +169,7 @@ classdef MockDialog < handle
       end
       key = obj.NumCalls;
       if key > obj.Dialogs.Count
-        key = key - obj.Dialogs.Count*floor(key/uint32(obj.Dialogs.Count));
+        key = key - uint32(obj.Dialogs.Count)*floor(key/uint32(obj.Dialogs.Count));
         key = typecast(key, obj.Dialogs.KeyType);
       end
     end
