@@ -72,11 +72,9 @@ if status == 0, rig.GitHash = strtrim(hash); end
 %% Configure common devices, if present
 configure('mouseInput');
 configure('lickDetector');
-
 %% Set up controllers
 % If no daqController exists, create a dummy DaqController
 if ~isfield(rig, 'daqController'), rig.daqController = hw.DaqController; end
-
 % If required, set up daq session and add channels
 if init && rig.useDaq
     rig.daqController.createDaqChannels();
@@ -102,7 +100,7 @@ if init
   if ~ismember('default', names)
     outputLatency = [devs.LowOutputLatency];
     outputLatency([devs.NrOutputChannels] == 0) = nan; % output channel mask
-    [~,I] = nanmin(outputLatency);
+    [~,I] = min(outputLatency,[],"includemissing");
     names{I} = 'default';
   end
   % Assign sanitized names

@@ -60,7 +60,7 @@ stimWindow = hw.ptb.Window;
 % graphics card), set this to 0 (meaning all screens). Otherwise if you
 % want just the primary display (the one with the menu bar), set it to 1;
 % secondary to 2, etc.
-stimWindow.ScreenNum = 0; % Use all screen
+stimWindow.ScreenNum = 2; % Use all screen
 
 
 %%% SyncBounds:
@@ -101,10 +101,10 @@ clockOut = 'port1/line0 (PFI4)'; % The clocking pulse output channel
 % connection between `clockIn` and `clockOut`.
 
 % Make sure the photodiode is placed against the screen before running
-stimWindow.Calibration = stimWindow.calibration(DaqDev); % calibration
+% stimWindow.Calibration = stimWindow.calibration(DaqDev); % calibration
 
 
-save(hardware, 'stimWindow', '-append') % Save the stimWindow to file
+save(hardware, 'stimWindow') % Save the stimWindow to file
 
 
 %% Signals viewing model
@@ -121,14 +121,14 @@ help vis.screen
 
 % First define some physical dimentions in cm:
 screenDimsCm = [19.6 14.7]; %[width_cm heigh_cm], each screen is the same
-centerPt = [0, 0, 9.5] % [x, y, z], observer position in cm. z = dist from screen
+centerPt = [0, 0, 10] % [x, y, z], observer position in cm. z = dist from screen
 centerPt(2,:) = [0, 0, 10]% Middle screen, observer slightly further back
-centerPt(3,:) = centerPt; % Observer equidistant from left and right motitors 
+centerPt(3,:) = [0, 0, 10]; % Observer equidistant from left and right motitors 
 angle = [-90; 0; 90]; % The angle of the screen relative to the observer
 
 % Define the pixel dimentions for the monitors
 r = Screen('Resolution', stimWindow.ScreenNum) % Returns the current resolution
-pxW = r.width; % e.g. 1280
+pxW = r.width/3; % e.g. 1280
 pxH = r.height; % e.g. 1024
 
 % Plug these values into the screens function:
@@ -146,58 +146,60 @@ save(hardware, 'screens', '-append');
 % Create a input for the Burgess LEGO wheel using the HW.DAQROTARYENCODER
 % class:
 doc hw.DaqRotaryEncoder % More details for this class
-mouseInput = hw.DaqRotaryEncoder;
+mouseInput = DummyMouse();
+save(hardware, 'mouseInput', '-append');
+% % To deteremine what devices you have installed and their IDs:
+% daq.getDevices
+% mouseInput.DaqId = 'Dev1'; % NI DAQ devices are named Dev# by default
+% 
+% % The counter channel which the rotary encoder is connected to:
+% mouseInput.DaqChannelId = 'ctr0';
+% 
+% % Size of DAQ counter range for detecting over- and underflows (e.g. if
+% % the DAQ's counter is 32-bit, this should be 2^32).
+% mouseInput.DaqCounterPeriod = 2^32;
+% 
+% % Setting the encoder resolution and wheel diameter allows us to express
+% % related experiment parameters in mm and degrees.  These two properties
+% % are used to calculate the MillimetresFactor property.
+% 
+% % Number of pulses per revolution.  Found at the end of the KÜBLER product
+% % number, e.g. 05.2400.1122.0100 has a resolution of 100
+% mouseInput.EncoderResolution = 1024
+% % Diameter of the wheel in mm
+% mouseInput.WheelDiameter = 62
 
-% To deteremine what devices you have installed and their IDs:
-daq.getDevices
-mouseInput.DaqId = 'Dev1'; % NI DAQ devices are named Dev# by default
 
-% The counter channel which the rotary encoder is connected to:
-mouseInput.DaqChannelId = 'ctr0';
-
-% Size of DAQ counter range for detecting over- and underflows (e.g. if
-% the DAQ's counter is 32-bit, this should be 2^32).
-mouseInput.DaqCounterPeriod = 2^32;
-
-% Setting the encoder resolution and wheel diameter allows us to express
-% related experiment parameters in mm and degrees.  These two properties
-% are used to calculate the MillimetresFactor property.
-
-% Number of pulses per revolution.  Found at the end of the KÜBLER product
-% number, e.g. 05.2400.1122.0100 has a resolution of 100
-mouseInput.EncoderResolution = 1024
-% Diameter of the wheel in mm
-mouseInput.WheelDiameter = 62
-
+mouseInput = DummyMouse();
 %% Hardware outputs
 % HW.DAQCONTROLLER
 doc hw.DaqController
-daqController = hw.DaqController;
+daqController = DummyDaq();%hw.DaqController;
 
-% This class deals with creating DAQ sessions, assigning output
-% channels and generating the relevant waveforms to output to each
-% channel.
- 
-% Example: Setting up water valve interface for a Signals behavour task In
-% the romote rig's hardware.mat, instantiate a hw.DaqController object to
-% interface with an NI DAQ
-
-% Set the DAQ id (can be found with daq.getDevices)
-daqController.DaqIds = 'Dev1';
-% Add a new channel
-daqController.ChannelNames = {'rewardValve'};
-% Define the channel ID to output on
-daqController.DaqChannelIds = {'ai0'};
-% As it is an analogue output, set the AnalogueChannelsIdx to true
-daqController.AnalogueChannelIdx(1) = true;
-% Add a signal generator that will return the correct samples for
-% delivering a reward of a specified volume
-daqController.SignalGenerators(1) = hw.RewardValveControl;
-% Set some of the required fields (see HW.REWARDVALVECONTROL for more info)
-daqController.SignalGenerators(1).OpenValue = 5; % Volts
-daqController.SignalGenerators(1).Calibrations = ...
-valveDeliveryCalibration(openTimeRange, scalesPort, openValue,...
-  closedValue, daqChannel, daqDevice);
+% % This class deals with creating DAQ sessions, assigning output
+% % channels and generating the relevant waveforms to output to each
+% % channel.
+% 
+% % Example: Setting up water valve interface for a Signals behavour task In
+% % the romote rig's hardware.mat, instantiate a hw.DaqController object to
+% % interface with an NI DAQ
+% 
+% % Set the DAQ id (can be found with daq.getDevices)
+% daqController.DaqIds = 'Dev1';
+% % Add a new channel
+% daqController.ChannelNames = {'rewardValve'};
+% % Define the channel ID to output on
+% daqController.DaqChannelIds = {'ai0'};
+% % As it is an analogue output, set the AnalogueChannelsIdx to true
+% daqController.AnalogueChannelIdx(1) = true;
+% % Add a signal generator that will return the correct samples for
+% % delivering a reward of a specified volume
+% daqController.SignalGenerators(1) = hw.RewardValveControl;
+% % Set some of the required fields (see HW.REWARDVALVECONTROL for more info)
+% daqController.SignalGenerators(1).OpenValue = 5; % Volts
+% daqController.SignalGenerators(1).Calibrations = ...
+% valveDeliveryCalibration(openTimeRange, scalesPort, openValue,...
+%   closedValue, daqChannel, daqDevice);
 
 % Save your hardware file
 save(hardware, 'daqController', '-append');
