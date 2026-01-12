@@ -25,27 +25,51 @@ p = fullfile(getOr(dat.paths, 'globalConfig'), 'remote.mat');
 name = ipaddress(hostname);
 stimulusControllers = srv.StimulusControl.create(name);
 
-% A note on adding new computers.  Do not simply copy objects, instead use
-% the following method:
-uri = 'ws://192.168.0.1:5000';
-stimulusControllers(end+1) = srv.StimulusControl.create('rig2', uri);
-
 %%% Ports
 
 % Note that the DefaultPort property is only used when the uri provided
 % doesn't already have a port (':5000' in the example above):
-stimulusControllers(end+1) = srv.StimulusControl.create('ZSCOPE');
+stimulusControllers(end+1) = srv.StimulusControl.create('BUGEON-STIM');
 stimulusControllers(end).Uri % 'ws://ZSCOPE:2014'
 
-stimulusControllers(end).DefaultPort = 4820;
-stimulusControllers(end).Uri % 'ws://ZSCOPE:4820'
+% stimulusControllers(end).DefaultPort = 4820;
+% stimulusControllers(end).Uri % 'ws://ZSCOPE:4820'
 
 % However as we set the uri for 'rig2' above including a port, the
 % DefaultPort property isn't used:
-rig2 = strcmp('rig2', {stimulusControllers.Name});
-stimulusControllers(rig2).DefaultPort % *2014
-stimulusControllers(rig2).Uri % 'ws://192.168.0.1:5000'
+% rig2 = strcmp('rig2', {stimulusControllers.Name});
+% stimulusControllers(rig2).DefaultPort % *2014
+% stimulusControllers(rig2).Uri % 'ws://192.168.0.1:5000'
 
+% One of the properties of this object is Services.  Here you can list all
+% the configured services for that rig.  This must match the Id properties
+% of the services:
+sc = stimulusControllers % Load our StimulusControl objects
+sc(end).Services = {'neural-imaging', 'eye-tracking', 'timeline'};
+
+% These appear as toggles in the 'rig options' dialog in MC, allowing you
+% to select which services you need starting for a given experiment.  You
+% can also set the default state by changing the SelectedServices property:
+sc(end).SelectedServices = [false, false, true]; % Only timeline on by default
+
+% Setting default delays is sometimes useful.  These can also be changed in
+% the 'rig options' dialog in MC.  The ExpPreDelay property is the time in
+% seconds to wait between starting the services and actually beginning the
+% experiment (for a Signals experiment this means updating the
+% 'events.expStart' signal).  This can be useful when a service takes some
+% time to initialize, or if you want to record some sort of baseline
+% activity before the first stimulus appears.  
+sc(end).ExpPreDelay = 10; % Send the start message to services then wait 10s
+
+% Likewise the ExpPostDelay is the time in seconds between the experiment
+% ending (i.e. the events.expStop signal updating), and the stop command
+% being sent to the services.  This may be useful if you wish to record
+% some baseline after the stimulus presentation has ended for example.
+sc(end).ExpPostDelay = 30; % Wait 30s then send the stop message to services
+
+% Save your objects:
+stimulusControllers = sc; % Variable must be saved as stimulusControllers
+save(p, 'stimulusControllers')
 %%
 % The port set in the URI of a rig's StrimulusControl object must be the
 % same as the port used by that rig's |srv.expServer|.  When expServer is
