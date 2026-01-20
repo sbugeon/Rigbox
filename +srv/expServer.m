@@ -109,7 +109,7 @@ bgColour = p.bgColour;
 
 %% Initialisation
 % Pull latest changes from remote
-git.update();
+% git.update();
 % random seed random number generator
 rng('shuffle');
 experiment = []; % currently running experiment, if any
