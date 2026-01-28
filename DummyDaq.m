@@ -7,6 +7,7 @@ classdef DummyDaq
         % To allow indexing like 'SignalGenerators(1)'. Initialized as a 
         % struct to be a valid container.
         SignalGenerators = struct();
+        DaqIds = 'Dev1';
     end
     
     methods

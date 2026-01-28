@@ -40,6 +40,18 @@ classdef StopServices < exp.Action
 %         failList = mkStr(mapToCell(@(e) e{2}.Title, exServices), [], ',', []);
 %         error('Not all services stopped (%s)', failList);
       end
+
+
+      % n = numel(obj.Services);
+      % for i = 1:n
+      %   try
+      %       O = obj.Services{i};
+      %     O.stop;
+      %     fprintf('Stopped ''%s''\n', obj.Services{i}.Title);
+      %   catch ex
+      %         fprintf('Could not stopped ''%s''\n', obj.Services{i}.Title);
+      %   end
+      % end
     end
   end
   

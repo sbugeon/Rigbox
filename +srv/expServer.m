@@ -518,8 +518,8 @@ ShowCursor();
     DaqDev = rig.daqController.DaqIds; % device id to which photodiode connects
     lightIn = 'ai1'; % defaults from hw.ptb.Window
     clockIn = 'ai0';
-    clockOut = 'port1/line0';
-    clockOutHint = 'PFI4';
+    clockOut = 'port0/line12';
+    clockOutHint = 'PFI12';
     plotFig = false; % Supress plot to avoid taskbar coming to foreground
     
     % Print to log and screen in case window covers prompt

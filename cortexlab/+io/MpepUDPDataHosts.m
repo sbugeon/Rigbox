@@ -62,6 +62,7 @@ classdef MpepUDPDataHosts < srv.Service
     
     function open(obj)
       obj.Socket = pnet('udpsocket', obj.LocalPort); % bind listening socket
+      obj.LocalPort
       % Set timeout to intial value
       pnet(obj.Socket, 'setreadtimeout', obj.ResponseTimeout);
       % Save IP addresses for remote hosts
@@ -121,7 +122,7 @@ classdef MpepUDPDataHosts < srv.Service
     end
     
     function stimStarted(obj, num, duration)
-      validateResponses(obj); % validate any outstanding responses
+      % validateResponses(obj); % validate any outstanding responses
       obj.StimNum = num;
       % Send the StimStart UDP
       [subject, seriesNum, expNum] = dat.expRefToMpep(obj.ExpRef);
@@ -186,7 +187,7 @@ classdef MpepUDPDataHosts < srv.Service
       if obj.StimOn
         stimEnded(obj);
       end
-      validateResponses(obj); % validate any outstanding responses
+      % validateResponses(obj); % validate any outstanding responses
       
       % Send the BlockEnd UDP
       [subject, seriesNum, expNum] = dat.expRefToMpep(obj.ExpRef);
@@ -239,7 +240,7 @@ classdef MpepUDPDataHosts < srv.Service
     
     function confirmedBroadcast(obj, msg)
       broadcast(obj, msg);
-      validateResponses(obj);
+      % validateResponses(obj);
       if ~isempty(obj.Timeline)&&isfield(obj.Timeline, 'IsRunning')&&obj.Timeline.IsRunning
         obj.Timeline.record('mpepUDP', msg); % record the UDP event in Timeline
       end
