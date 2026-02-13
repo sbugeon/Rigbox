@@ -302,8 +302,8 @@ classdef Window < hw.Window
       %first flip will be first sync colour in cycle
       obj.NextSyncIdx = 1;
       obj.RefreshInterval = Screen('GetFlipInterval', obj.PtbHandle);
-      obj.White = WhiteIndex(obj.PtbHandle);
-      obj.Black = BlackIndex(obj.PtbHandle);
+      obj.White = WhiteIndex(obj.PtbHandle)*[0 1 1];
+      obj.Black = BlackIndex(obj.PtbHandle)*[0 1 1];
       
       %apply calibration, if any
       if ~isempty(obj.Calibration)
