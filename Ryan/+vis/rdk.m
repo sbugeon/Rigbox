@@ -20,10 +20,14 @@ elem.dotColor = [0 1 1]';
 elem.backgroundColor = [0.5 0.5 0.5]';
 elem.show = false;
 
-% Keep elem.layers as a Signals layer signal whose current value is always
-% a standard vis.emptyLayer struct.  exp.SignalsExp/loadVisual immediately
-% reads layers.Node.CurrValue during init and expects [val.show] to work.
-elem.layers = elem.map(@makeLayer).flattenStruct();
+% Keep elem.layers from publishing partially initialized dynamic texture
+% fields.  exp.SignalsExp/loadVisual may read the layer before t/newTrial
+% have posted, so signal-valued rgba fields must not overwrite the valid
+% default layer until they have real values.
+flatten = @(A)A(:);
+isInitialized = @(l)~any(flatten(cellfun('isempty', struct2cell(l))));
+layers = elem.map(@makeLayer).flattenStruct();
+elem.layers = layers.keepWhen(layers.map(isInitialized));
 end
 
 function layer = makeLayer(newelem)
@@ -44,10 +48,11 @@ layer.textureId = sprintf('~rdk%i', rdkNum);
 
 if hasSignals(newelem.dotPositions, newelem.dotSize, ...
     newelem.dotColor, newelem.backgroundColor)
-  [layer.rgba, layer.rgbaSize] = mapn( ...
+  layer.rgba = mapn( ...
     newelem.dotPositions, newelem.dotSize, ...
     newelem.dotColor, newelem.backgroundColor, ...
-    @renderRdk);
+    @renderRdkRgba);
+  layer.rgbaSize = rdkTextureSize();
 else
   [layer.rgba, layer.rgbaSize] = renderRdk( ...
     newelem.dotPositions, newelem.dotSize, ...
@@ -65,11 +70,21 @@ for i = 1:nargin
 end
 end
 
+function textureSize = rdkTextureSize()
+textureSize = [720 360];
+end
+
+function rgba = renderRdkRgba(dotPositions, dotSize, dotColor, ...
+    backgroundColor)
+[rgba, ~] = renderRdk(dotPositions, dotSize, dotColor, backgroundColor);
+end
+
 function [rgba, rgbaSize] = renderRdk(dotPositions, dotSize, ...
     dotColor, backgroundColor)
 
-textureWidth = 720;
-textureHeight = 360;
+textureSize = rdkTextureSize();
+textureWidth = textureSize(1);
+textureHeight = textureSize(2);
 dotSize = max(sanitizeScalar(dotSize, 3, 'dotSize'), 1);
 dotColor = sanitizeColor(dotColor, [0 1 1], 'dotColor');
 backgroundColor = sanitizeColor(backgroundColor, [0.5 0.5 0.5], ...

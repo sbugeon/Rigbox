@@ -75,6 +75,7 @@ rewardId = 1;
 % Function for constructing a full ID for warnings and errors
 fullID = @(id) strjoin([{'Rigbox:srv:expServer'}, ensureCell(id)],':');
 
+ SimpleMovieDemo
 %% User parameters
 p = inputParser;
 p.addParameter('expRef', [], @ischar)
