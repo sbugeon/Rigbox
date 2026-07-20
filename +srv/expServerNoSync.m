@@ -75,6 +75,7 @@ rewardId = 1;
 % Function for constructing a full ID for warnings and errors
 fullID = @(id) strjoin([{'Rigbox:srv:expServer'}, ensureCell(id)],':');
 
+ SimpleMovieDemo
 %% User parameters
 p = inputParser;
 p.addParameter('expRef', [], @ischar)
@@ -332,6 +333,8 @@ ShowCursor();
             end
             experiment.quit(immediately);
             send(communicator, id, []);
+      %            rig.stimWindow.clear(); % clear the screen after
+      % rig.stimWindow.flip(); % clear the screen after
           else
             log('Quit message received but no experiment is running\n');
           end
@@ -349,9 +352,10 @@ ShowCursor();
   function aborted = runExp(expRef, preDelay, postDelay, alyx)
     % disable ptb keyboard listening
     KbQueueRelease();
-    
-    rig.stimWindow.flip(); % clear the screen before
-    
+
+         Screen('FillRect', rig.stimWindow.PtbHandle,[0 0 0], [  0  874 150 1024]);
+      rig.stimWindow.flip(); % clear the screen before
+   
     % start the timeline system
     if rig.timeline.UseTimeline
       % turn off rotary encoder recording in timeline by default so
@@ -379,7 +383,7 @@ ShowCursor();
     experiment.delete()
     experiment = [];
     rig.stimWindow.BackgroundColour = bgColour;
-    rig.stimWindow.flip(); % clear the screen after
+    % rig.stimWindow.flip(); % clear the screen after
     
     % save a copy of the hardware in JSON
     hwInfo = dat.expFilePath(expRef, 'hw-info', 'master', 'json');
@@ -402,6 +406,7 @@ ShowCursor();
     % re-enable ptb keyboard listening
     KbQueueCreate();
     KbQueueStart();
+    
   end
 
   function calibrateWaterDelivery()

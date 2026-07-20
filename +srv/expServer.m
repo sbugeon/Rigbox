@@ -348,8 +348,13 @@ ShowCursor();
     % disable ptb keyboard listening
     KbQueueRelease();
     
-    rig.stimWindow.flip(); % clear the screen before
-    
+    % rig.stimWindow.flip(); % clear the screen before
+
+          % we set sync square to black at the start
+
+      Screen('FillRect', rig.stimWindow.PtbHandle,[0 0 0], [  0  874 150 1024]);
+      rig.stimWindow.flip(); % clear the screen before
+
     % start the timeline system
     if rig.timeline.UseTimeline
       % turn off rotary encoder recording in timeline by default so
@@ -378,7 +383,7 @@ ShowCursor();
     experiment = [];
     rig.stimWindow.BackgroundColour = bgColour;
     rig.stimWindow.flip(); % clear the screen after
-    
+  
     % save a copy of the hardware in JSON
     hwInfo = dat.expFilePath(expRef, 'hw-info', 'master', 'json');
     fid = fopen(hwInfo, 'w');
@@ -396,10 +401,10 @@ ShowCursor();
       %stop the timeline system
       rig.timeline.stop();
     end
-    
     % re-enable ptb keyboard listening
     KbQueueCreate();
     KbQueueStart();
+    % rig.stimWindow.flip(); % back to black
   end
 
   function calibrateWaterDelivery()

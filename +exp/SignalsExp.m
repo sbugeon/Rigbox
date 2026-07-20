@@ -385,8 +385,11 @@ classdef SignalsExp < handle
       obj.Pending = dueHandlerInfo(obj, start, initInfo, obj.Clock.now + obj.PreDelay);
       
       %refresh the stimulus window
+      Screen('FillRect', obj.StimWindowPtr,[0 0 0], [  0  874 150 1024]);
       Screen('Flip', obj.StimWindowPtr);
       
+        % obj.flip(); % clear the screen before
+
       try
         % start the experiment loop
         mainLoop(obj);
@@ -651,8 +654,9 @@ classdef SignalsExp < handle
       
       stopdatetime = now;
       %clear the stimulus window
+      Screen('FillRect', obj.StimWindowPtr,[0 0 0], [  0  874 150 1024]);
       Screen('Flip', obj.StimWindowPtr);
-      
+
       % collate the logs
       %events
       obj.Data.events = logs(obj.Events);

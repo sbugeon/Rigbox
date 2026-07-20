@@ -324,6 +324,11 @@ classdef Window < hw.Window
       if isempty(obj.ForegroundColour)
         obj.ForegroundColour = obj.White;
       end
+
+      % we set sync square to black at the start
+      obj.flip(); % clear the screen before
+      Screen('FillRect', obj.PtbHandle,[0 0 0], [  0  874 150 1024]);
+      obj.flip(); % clear the screen before
     end
 
     function close(obj)
@@ -454,6 +459,8 @@ classdef Window < hw.Window
       % CLEAR Clear any textures on screen
       %  Redraw background over any textures
       Screen('FillRect', obj.PtbHandle, obj.BackgroundColour);
+       obj.positionSyncRegion('SouthWest', 150, 150);
+       Screen('FillRect', obj.PtbHandle, [0 0 0],obj.SyncBounds)
     end
 
     function drawTexture(obj, tex, srcRect, destRect, angle, globalAlpha)

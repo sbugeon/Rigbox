@@ -71,7 +71,7 @@ stimWindow.ScreenNum = 2; % Use all screen
 % Let's put a 100 px^2 sync square in the top right of the window:
 stimWindow.positionSyncRegion('SouthWest', 150, 150)
 
-stimWindow.SyncColourCycle = [0; 100];
+stimWindow.SyncColourCycle = [100; 0];
 %%% PxDepth 
 % Sets the depth (in bits) of each pixel; default is 32 bits. You can
 % usually simply set it based on what the system uses:
