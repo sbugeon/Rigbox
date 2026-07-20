@@ -9,6 +9,9 @@ function elem = rdk(t)
 %     dims             Full-field extent [width height] in visual degrees.
 %     dotSize          Dot diameter in texture pixels. Default 3.
 %     dotColor         RGB column vector in [0, 1]. Default cyan.
+%     dotColor2        Optional RGB column vector in [0, 1]. When set, the
+%                      first half of dots uses dotColor and the second half
+%                      uses dotColor2.
 %     backgroundColor  RGB column vector in [0, 1]. Default mid-grey.
 %     show             Logical visibility signal. Default false.
 
@@ -17,6 +20,7 @@ elem.dotPositions = zeros(0, 2);
 elem.dims = [270 90]';
 elem.dotSize = 3;
 elem.dotColor = [0 1 1]';
+elem.dotColor2 = [];
 elem.backgroundColor = [0.5 0.5 0.5]';
 elem.show = false;
 
@@ -47,16 +51,16 @@ rdkNum = iff(isempty(rdkNum), 1, rdkNum + 1);
 layer.textureId = sprintf('~rdk%i', rdkNum);
 
 if hasSignals(newelem.dotPositions, newelem.dotSize, ...
-    newelem.dotColor, newelem.backgroundColor)
+    newelem.dotColor, newelem.dotColor2, newelem.backgroundColor)
   layer.rgba = mapn( ...
     newelem.dotPositions, newelem.dotSize, ...
-    newelem.dotColor, newelem.backgroundColor, ...
+    newelem.dotColor, newelem.dotColor2, newelem.backgroundColor, ...
     @renderRdkRgba);
   layer.rgbaSize = rdkTextureSize();
 else
   [layer.rgba, layer.rgbaSize] = renderRdk( ...
     newelem.dotPositions, newelem.dotSize, ...
-    newelem.dotColor, newelem.backgroundColor);
+    newelem.dotColor, newelem.dotColor2, newelem.backgroundColor);
 end
 end
 
@@ -74,19 +78,27 @@ function textureSize = rdkTextureSize()
 textureSize = [720 360];
 end
 
-function rgba = renderRdkRgba(dotPositions, dotSize, dotColor, ...
+function rgba = renderRdkRgba(dotPositions, dotSize, dotColor, dotColor2, ...
     backgroundColor)
-[rgba, ~] = renderRdk(dotPositions, dotSize, dotColor, backgroundColor);
+[rgba, ~] = renderRdk(dotPositions, dotSize, dotColor, dotColor2, ...
+  backgroundColor);
 end
 
 function [rgba, rgbaSize] = renderRdk(dotPositions, dotSize, ...
-    dotColor, backgroundColor)
+    dotColor, dotColor2, backgroundColor)
 
 textureSize = rdkTextureSize();
 textureWidth = textureSize(1);
 textureHeight = textureSize(2);
 dotSize = max(sanitizeScalar(dotSize, 3, 'dotSize'), 1);
 dotColor = sanitizeColor(dotColor, [0 1 1], 'dotColor');
+if nargin < 5
+  backgroundColor = dotColor2;
+  dotColor2 = [];
+end
+if ~isempty(dotColor2)
+  dotColor2 = sanitizeColor(dotColor2, dotColor, 'dotColor2');
+end
 backgroundColor = sanitizeColor(backgroundColor, [0.5 0.5 0.5], ...
   'backgroundColor');
 
@@ -103,9 +115,14 @@ if ~isempty(dotPositions)
   x = 1 + dotPositions(:, 1)*(textureWidth - 1);
   y = 1 + dotPositions(:, 2)*(textureHeight - 1);
   radius = max(dotSize/2, 0.5);
+  nColor1 = ceil(size(dotPositions, 1)/2);
 
   for i = 1:size(dotPositions, 1)
-    rgb = drawDot(rgb, x(i), y(i), radius, dotColor, ...
+    currentDotColor = dotColor;
+    if ~isempty(dotColor2) && i > nColor1
+      currentDotColor = dotColor2;
+    end
+    rgb = drawDot(rgb, x(i), y(i), radius, currentDotColor, ...
       textureWidth, textureHeight);
   end
 end
